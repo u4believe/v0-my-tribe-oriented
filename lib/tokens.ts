@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
+import { calculateMarketCap } from "@/lib/bonding-curve"
 
 export interface MemeToken {
   id: string
@@ -98,7 +99,7 @@ export async function fetchAllTokens(): Promise<MemeToken[]> {
     const profileMap = new Map((profiles || []).map((p) => [p.wallet_address, p]))
 
     // Merge tokens with profiles
-    return tokens.map((token) => {
+    const result = tokens.map((token) => {
       const profile = profileMap.get(token.creator)
       return supabaseToToken({
         ...token,
@@ -110,6 +111,8 @@ export async function fetchAllTokens(): Promise<MemeToken[]> {
           : null,
       })
     })
+
+    return result
   } catch (error) {
     console.error("[v0] Failed to fetch tokens:", error)
     return []
@@ -250,7 +253,14 @@ export async function updateTokenInDatabase(
     const dbUpdates: any = {}
     if (updates.currentPrice !== undefined) dbUpdates.current_price = updates.currentPrice
     if (updates.currentSupply !== undefined) dbUpdates.current_supply = Math.floor(updates.currentSupply)
-    if (updates.marketCap !== undefined) dbUpdates.market_cap = updates.marketCap
+
+    if (updates.currentSupply !== undefined) {
+      // Auto-calculate market cap using bonding curve formula
+      // Market Cap = Current Price × Circulating Supply (700M tokens)
+      const calculatedMarketCap = calculateMarketCap(updates.currentSupply)
+      dbUpdates.market_cap = calculatedMarketCap
+    }
+
     if (updates.holders !== undefined) dbUpdates.holders = Math.floor(updates.holders)
 
     const { error } = await supabase.from("meme_tokens").update(dbUpdates).eq("contract_address", contractAddress)

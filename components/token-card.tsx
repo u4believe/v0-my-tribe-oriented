@@ -22,6 +22,13 @@ export default function TokenCard({ token, onClick, isAlpha, onTradeComplete }: 
   const [showTradeModal, setShowTradeModal] = useState(false)
   const [tradeMode, setTradeMode] = useState<"buy" | "sell">("buy")
 
+  console.log("[v0] TokenCard rendering with token:", {
+    name: token.name,
+    marketCap: token.marketCap,
+    currentSupply: token.currentSupply,
+    currentPrice: token.currentPrice,
+  })
+
   const currentPrice = token.currentPrice ?? 0
   const startPrice = token.startPrice ?? 0
 
@@ -99,9 +106,7 @@ export default function TokenCard({ token, onClick, isAlpha, onTradeComplete }: 
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">Market Cap</span>
-              <span className="font-semibold text-sm text-foreground">
-                ${((token.marketCap ?? 0) / 1000000).toFixed(2)}M
-              </span>
+              <span className="font-semibold text-sm text-foreground">${(token.marketCap ?? 0).toFixed(2)} TRUST</span>
             </div>
           </div>
 

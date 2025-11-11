@@ -76,3 +76,18 @@ export function calculateTrustFromSell(tokenAmount: number, currentSupply: numbe
   const fee = (grossTrust * BONDING_CURVE_CONFIG.FEE_PERCENT) / 100
   return grossTrust - fee
 }
+
+/**
+ * Calculate market cap based on current price and total circulating supply
+ * Market Cap = Current Price × Circulating Supply (700M tokens - the bonding curve allocation)
+ * This represents the theoretical total value if all bonding curve tokens were at the current price
+ */
+export function calculateMarketCap(currentSupply: number): number {
+  const currentPrice = calculateBondingCurvePrice(currentSupply)
+
+  const { MAX_SUPPLY, BONDING_CURVE_PERCENT } = BONDING_CURVE_CONFIG
+  const circulatingSupply = (MAX_SUPPLY * BONDING_CURVE_PERCENT) / 100 // 700,000,000 tokens
+
+  // Market cap = current price × circulating supply
+  return currentPrice * circulatingSupply
+}

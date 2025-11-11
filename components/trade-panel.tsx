@@ -99,12 +99,15 @@ export default function TradePanel({ token, onTradeComplete }: TradePanelProps) 
           const currentPrice = await getCurrentPrice(token.contractAddress)
 
           if (tokenInfo && currentPrice) {
-            const marketCap = Number.parseFloat(tokenInfo.currentSupply) * Number.parseFloat(currentPrice)
+            console.log("[v0] Updating token with:", {
+              currentPrice: Number.parseFloat(currentPrice),
+              currentSupply: Number.parseFloat(tokenInfo.currentSupply),
+            })
 
             await updateTokenInDatabase(token.contractAddress, {
               currentPrice: Number.parseFloat(currentPrice),
               currentSupply: Number.parseFloat(tokenInfo.currentSupply),
-              marketCap: marketCap,
+              // Market cap will be auto-calculated using bonding curve formula
             })
 
             console.log("[v0] Token data updated successfully")
