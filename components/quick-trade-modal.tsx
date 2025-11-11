@@ -68,7 +68,7 @@ export default function QuickTradeModal({
 
     try {
       if (mode === "buy") {
-        const minTokensOut = (Number.parseFloat(amount) * 0.995).toString()
+        const minTokensOut = (Number.parseFloat(amount) * 0.99).toString() // Updated slippage from 0.5% to 1%
         await buyTokens(token.contractAddress, trustAmount, minTokensOut)
       } else {
         await sellTokens(token.contractAddress, amount)
@@ -185,7 +185,7 @@ export default function QuickTradeModal({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Slippage</span>
-              <span className="text-foreground font-semibold">0.5%</span>
+              <span className="text-foreground font-semibold">1%</span> {/* Updated slippage display from 0.5% to 1% */}
             </div>
           </div>
 

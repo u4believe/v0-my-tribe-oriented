@@ -83,7 +83,7 @@ export default function TradePanel({ token, onTradeComplete }: TradePanelProps) 
 
     try {
       if (mode === "buy") {
-        const minTokensOut = (Number.parseFloat(amount) * 0.995).toFixed(6) // 0.5% slippage
+        const minTokensOut = (Number.parseFloat(amount) * 0.99).toFixed(6) // 1% slippage
         await buyTokens(token.contractAddress, trustAmount, minTokensOut)
       } else {
         await sellTokens(token.contractAddress, amount)
@@ -207,7 +207,7 @@ export default function TradePanel({ token, onTradeComplete }: TradePanelProps) 
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Slippage</span>
-          <span className="text-foreground font-semibold">0.5%</span>
+          <span className="text-foreground font-semibold">1%</span>
         </div>
       </div>
 
