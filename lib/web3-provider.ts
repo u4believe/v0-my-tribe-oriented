@@ -6,6 +6,8 @@ let provider: BrowserProvider | null = null
 let jsonProvider: JsonRpcProvider | null = null
 let signer: any = null
 
+let isConnecting = false
+
 export async function getProvider() {
   if (!window.ethereum) {
     throw new Error("MetaMask or Web3 wallet not found")
@@ -90,7 +92,13 @@ export async function switchNetwork() {
 }
 
 export async function connectWallet() {
+  if (isConnecting) {
+    console.log("[v0] Connection already in progress, waiting...")
+    throw new Error("Connection already in progress. Please wait for the wallet popup to complete.")
+  }
+
   try {
+    isConnecting = true
     await switchNetwork()
     const prov = await getProvider()
     const accounts = await prov.send("eth_requestAccounts", [])
@@ -98,6 +106,8 @@ export async function connectWallet() {
   } catch (error) {
     console.error("Failed to connect wallet:", error)
     throw error
+  } finally {
+    isConnecting = false
   }
 }
 

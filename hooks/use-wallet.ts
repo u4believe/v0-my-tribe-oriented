@@ -45,6 +45,11 @@ export function useWallet() {
   }, [])
 
   const connect = async () => {
+    if (isConnecting) {
+      console.log("[v0] Already connecting, ignoring duplicate request")
+      return
+    }
+
     setIsConnecting(true)
     setError(null)
     try {
@@ -54,6 +59,7 @@ export function useWallet() {
       setBalance(bal)
     } catch (err: any) {
       setError(err.message || "Failed to connect wallet")
+      console.error("[v0] Wallet connection error:", err)
     } finally {
       setIsConnecting(false)
     }
