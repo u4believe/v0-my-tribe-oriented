@@ -69,22 +69,18 @@ export default function BondingCurveView({ token: initialToken, onBack }: Bondin
             </div>
 
             {/* Key Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Current Price</p>
                 <p className="text-xl font-bold text-foreground">${token.currentPrice.toFixed(8)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Market Cap</p>
-                <p className="text-xl font-bold text-foreground">${(token.marketCap / 1000000).toFixed(2)}M</p>
+                <p className="text-xl font-bold text-foreground">{token.marketCap.toFixed(2)} TRUST</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Max Supply</p>
                 <p className="text-xl font-bold text-foreground">{(token.maxSupply / 1000000).toFixed(0)}M</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Holders</p>
-                <p className="text-xl font-bold text-foreground">{token.holders}</p>
               </div>
             </div>
           </Card>

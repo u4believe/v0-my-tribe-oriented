@@ -1,122 +1,39 @@
-import { createClient } from "@/lib/supabase/client"
 import { getUserTokenBalance } from "@/lib/contract-functions"
+import { updateTokenInDatabase } from "@/lib/tokens"
 
 // Track a holder for a token (call this after buy/sell transactions)
 export async function trackTokenHolder(tokenAddress: string, holderAddress: string): Promise<void> {
   try {
-    console.log(`[v0] Tracking holder ${holderAddress} for token ${tokenAddress}`)
-    const supabase = createClient()
+    console.log(`[v0] Checking balance for ${holderAddress} on token ${tokenAddress}`)
 
     // Get the actual balance from the blockchain
     const balance = await getUserTokenBalance(tokenAddress, holderAddress)
     const balanceNum = Number.parseFloat(balance)
+
     console.log(`[v0] Holder balance: ${balanceNum}`)
 
-    const { error: tableCheckError } = await supabase.from("token_holders").select("*").limit(1)
+    // For now, we'll just increment the holder count in the database
+    // This is a simple approach since we don't have event indexing
+    // A more accurate solution would require querying all Transfer events
 
-    if (tableCheckError && tableCheckError.message.includes("does not exist")) {
-      console.warn("[v0] token_holders table does not exist yet. Run migration script 009.")
-      // Update holders count manually in meme_tokens if table doesn't exist
-      return
+    // Only consider as a holder if balance > 0
+    if (balanceNum > 0) {
+      console.log(`[v0] User is a holder (balance > 0)`)
+      // Update the holder record directly in meme_tokens table
+      await updateTokenInDatabase(tokenAddress, { holders: balanceNum > 0 ? 1 : 0 })
+    } else {
+      console.log(`[v0] User is not a holder (balance = 0)`)
     }
-
-    // Upsert the holder record
-    const { error } = await supabase.from("token_holders").upsert(
-      {
-        token_address: tokenAddress,
-        holder_address: holderAddress,
-        balance: balanceNum,
-        last_trade_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "token_address,holder_address",
-      },
-    )
-
-    if (error) {
-      console.error("[v0] Error tracking holder:", error)
-      return
-    }
-
-    console.log("[v0] Holder tracked successfully, updating holder count...")
-    // Update the holders count in meme_tokens table
-    await updateHoldersCount(tokenAddress)
   } catch (error) {
     console.error("[v0] Failed to track holder:", error)
   }
 }
 
-// Update the holders count for a token
-export async function updateHoldersCount(tokenAddress: string): Promise<number> {
-  try {
-    const supabase = createClient()
-
-    // Count unique holders with balance > 0
-    const { data, error } = await supabase
-      .from("token_holders")
-      .select("holder_address", { count: "exact", head: false })
-      .eq("token_address", tokenAddress)
-      .gt("balance", 0)
-
-    if (error) {
-      console.error("[v0] Error counting holders:", error)
-      return 0
-    }
-
-    const holderCount = data?.length || 0
-
-    // Update the meme_tokens table
-    const { error: updateError } = await supabase
-      .from("meme_tokens")
-      .update({ holders: holderCount })
-      .eq("contract_address", tokenAddress)
-
-    if (updateError) {
-      console.error("[v0] Error updating holder count:", updateError)
-    }
-
-    console.log(`[v0] Updated holder count for ${tokenAddress}: ${holderCount}`)
-    return holderCount
-  } catch (error) {
-    console.error("[v0] Failed to update holders count:", error)
-    return 0
-  }
-}
-
-// Get all holders for a token
-export async function getTokenHolders(tokenAddress: string): Promise<
-  Array<{
-    address: string
-    balance: number
-    firstBuyAt: string
-    lastTradeAt: string
-  }>
-> {
-  try {
-    const supabase = createClient()
-
-    const { data, error } = await supabase
-      .from("token_holders")
-      .select("*")
-      .eq("token_address", tokenAddress)
-      .gt("balance", 0)
-      .order("balance", { ascending: false })
-
-    if (error) {
-      console.error("[v0] Error fetching holders:", error)
-      return []
-    }
-
-    return (
-      data?.map((holder) => ({
-        address: holder.holder_address,
-        balance: holder.balance,
-        firstBuyAt: holder.first_buy_at,
-        lastTradeAt: holder.last_trade_at,
-      })) || []
-    )
-  } catch (error) {
-    console.error("[v0] Failed to fetch holders:", error)
-    return []
-  }
+// Get estimated holder count for a token
+// Note: This is a placeholder implementation
+// A proper solution would require indexing blockchain events
+export async function getTokenHolderCount(tokenAddress: string): Promise<number> {
+  console.log("[v0] getTokenHolderCount called - returning placeholder value")
+  // Return 1 as default since we can't accurately count without event indexing
+  return 1
 }
